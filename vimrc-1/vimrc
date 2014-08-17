@@ -1,0 +1,203 @@
+set nocompatible
+
+" NeoBundle
+if has('vim_starting')
+  set runtimepath+=~/.vim/bundle/neobundle.vim
+endif
+call neobundle#rc(expand('~/.vim/bundle/'))
+
+NeoBundleFetch 'Shougo/neobundle.vim'
+NeoBundle 'Shougo/vimproc', {
+    \ 'build' : {
+    \     'windows' : 'make -f make_mingw64.mak',
+    \     'cygwin' : 'make -f make_cygwin.mak',
+    \     'mac' : 'make -f make_mac.mak',
+    \     'unix' : 'make -f make_unix.mak',
+    \ }}
+NeoBundleLazy 'Shougo/neocomplete', {
+    \ 'autoload' : {
+    \   'insert' : 1,
+    \ }}
+NeoBundleLazy 'Shougo/neosnippet', {
+    \ 'autoload' : {
+    \   'insert' : 1,
+    \ }}
+NeoBundleLazy 'Shougo/vimshell', {
+    \ 'depends' : 'Shougo/vimproc',
+    \ 'autoload' : {
+    \   'commands' : [{ 'name' : 'VimShell',
+    \                   'complete' : 'customlist,vimshell#complete'},
+    \                   'VimShellExecute', 'VimShellInteractive',
+    \                   'VimShellTerminal', 'VimShellPop'],
+    \   'mappings' : ['<Plug>(vimshell_switch)']
+    \ }}
+NeoBundleLazy 'tpope/vim-endwise.git', {
+    \ 'autoload' : {
+    \   'insert' : 1,
+    \ }}
+NeoBundleLazy 'Blackrush/vim-gocode', {
+    \ 'autoload' : { 'filetypes' : ['go'] } }
+NeoBundle 'itchyny/lightline.vim'
+NeoBundle 'fuenor/im_control.vim'
+NeoBundleLazy 'thinca/vim-quickrun', {
+    \ 'autoload' : {
+    \   'mappings' : [['nxo', '<Plug>(quickrun)']],
+    \   'commands' : 'QuickRun',
+    \ }}
+NeoBundle 'scrooloose/syntastic'
+NeoBundle 'vim-scripts/AnsiEsc.vim'
+NeoBundle 'scrooloose/nerdtree'
+NeoBundle 'tpope/vim-surround'
+
+" color schemes
+NeoBundle 'altercation/vim-colors-solarized'
+NeoBundle 'jeffreyiacono/vim-colors-wombat'
+NeoBundle 'nanotech/jellybeans.vim'
+"taskpaper
+NeoBundle 'davidoc/taskpaper.vim'
+
+set rtp+=$GOROOT/misc/vim
+
+syntax on
+filetype plugin indent on
+
+NeoBundleCheck
+
+" Local settings
+if filereadable(expand('~/.vimrc.local'))
+  source ~/.vimrc.local
+endif
+
+" File
+set encoding=UTF-8
+set hidden
+set autoread
+set browsedir=buffer
+
+" Indent
+set expandtab
+set softtabstop=4
+set smarttab
+set shiftwidth=4
+set tabstop=4
+set smartindent
+set autoindent
+
+" Backup
+set directory=~/.vim/backup
+set backupdir=~/.vim/backup
+
+" Searching
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set wrapscan
+
+" Display
+colorscheme jellybeans
+set number
+set title
+set ruler
+set showcmd
+set showmatch
+set laststatus=2
+set t_Co=256
+set notitle
+set cc=120
+set mouse=a
+set rtp+=$GOROOT/misc/vim
+highlight ColorColumn ctermbg=8
+
+" Input
+set backspace=indent,eol,start
+set clipboard=unnamed
+set whichwrap=b,s,<,>,[,]
+set completeopt=menuone
+
+" neocomplete
+let g:neocomplete#enable_at_startup = 1 " 起動時にneocompleteを有効化する
+let g:neocomplete#enable_smart_case = 1 " 大文字が入力されるまで大文字小文字を区別しない
+let g:neocomplete#sources#min_keyword_length = 3 " syntaxをキャッシュする時の最小文字列長
+let g:neocomplete#lock_buffer_name_pattern = '\*ku\*' " neocompleteをロックするバッファ名のパターン
+let g:neocomplete#sources#dictionary#dictionaries = {
+    \   'default' : '',
+    \   'vimshell' : $HOME.'/.vimshell/command-history'
+    \ }
+if !exists('g:neocomplete_keyword_patterns')
+  let g:neocomplete_keyword_patterns = {}
+endif
+let g:neocomplete_keyword_patterns['default'] = '\h\w*'
+inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+function! s:my_cr_function()
+  return pumvisible() ? neocomplete#close_popup() : "\<CR>"
+endfunction
+inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <expr><C-g> neocomplete#undo_completion()
+inoremap <expr><C-l> neocomplete#complete_common_string()
+inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><BS>  neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><C-y> neocomplete#close_popup()
+inoremap <expr><C-e> neocomplete#cancel_popup()
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+
+" golang {{{
+" ファイルタイプ固有設定
+autocmd BufNewFile,BufRead *.go setlocal filetype=go
+autocmd FileType go setlocal completeopt=menu,preview noexpandtab shiftwidth=4 tabstop=4 softtabstop=4 nosmarttab
+
+" goimports
+let g:gofmt_command = "goimports"
+
+" godef
+let g:godef_same_file_in_same_window=1
+" }}}
+
+" lightline.vim {{{
+let g:lightline = {
+    \   'colorscheme': 'jellybeans'
+    \ }
+" }}}
+
+" im_control.vim {{{
+let IM_CtrlBufLocalMode = 1 " バッファごとに日本語入力固定モードを設定
+if has('gui_running')
+  let IM_CtrlMode = 4
+elseif has('unix')
+  let IM_CtrlMode = 6  " fcitx mode
+elseif has('mac')
+  let IM_CtrlMode = 1
+  let IM_CtrlMacVimKaoriya = 0 " MacVimKaoriya対策を無効化
+elseif has('win32') || has('win64')
+  let IM_CtrlMode = 4
+else
+  let IM_CtrlMode = 1
+endif
+inoremap <silent> <C-j> <C-r>=IMState('FixMode')<CR>
+" }}}
+
+" syntastic {{{
+let g:syntastic_enable_signs = 1
+let g:syntastic_auto_loc_list = 2
+" }}}
+
+" NERDTree {{{
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+map <C-n> :NERDTreeToggle<CR>
+" }}}
+
+
+" binary {{{
+augroup BinaryXXD
+  autocmd!
+  autocmd BufReadPre  *.bin let &binary =1
+  autocmd BufReadPost * if &binary | silent %!xxd -g 1
+  autocmd BufReadPost * set ft=xxd | endif
+  autocmd BufWritePre * if &binary | %!xxd -r | endif
+  autocmd BufWritePost * if &binary | silent %!xxd -g 1
+  autocmd BufWritePost * set nomod | endif
+augroup END
+" }}}
+
