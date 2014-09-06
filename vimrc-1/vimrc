@@ -55,6 +55,9 @@ NeoBundle 'jeffreyiacono/vim-colors-wombat'
 NeoBundle 'nanotech/jellybeans.vim'
 "taskpaper
 NeoBundle 'davidoc/taskpaper.vim'
+"go
+NeoBundle 'dgryski/vim-godef'
+NeoBundle 'majutsushi/tagbar'
 
 set rtp+=$GOROOT/misc/vim
 
